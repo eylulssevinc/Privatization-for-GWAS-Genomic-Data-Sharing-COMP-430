@@ -89,6 +89,32 @@ def cohorts_json_path() -> Path:
     return PROC_COHORTS_DIR / "ceu_case_control_test_split.json"
 
 
+def ceu_yri_cohorts_json_path() -> Path:
+    return PROC_COHORTS_DIR / "hapmap_CEU_control_test__YRI_case.json"
+
+
+def genotype_path(pop: str, chrom: int) -> Path:
+    """
+    pop: "CEU" | "YRI"
+    chrom: chromosome number (e.g. 2, 10)
+    """
+    pop = pop.upper()
+    if pop not in {"CEU", "YRI"}:
+        raise ValueError("pop must be one of {'CEU','YRI'}")
+    return RAW_GENOTYPES_DIR / f"genotypes_chr{chrom}_{pop}_r27_nr.b36_fwd.txt.gz"
+
+
+def aligned_region_npz_path(pop: str, region_tag: str, other_pop: str) -> Path:
+    """
+    pop: "CEU" | "YRI"
+    region_tag: e.g. "chr2_5Mb" or "chr10_1Mb"
+    other_pop: population used for SNP intersection
+    """
+    pop = pop.upper()
+    other_pop = other_pop.upper()
+    return PROC_REGIONS_DIR / f"{pop}_{region_tag}.common_with_{other_pop}.npz"
+
+
 def blocks_json_path(region_name: str) -> Path:
     return PROC_BLOCKS_DIR / f"{region_name}.blocks.json"
 
@@ -125,13 +151,14 @@ def method_dir(method: str, eps: float) -> Path:
 def load_region_npz(path: Path) -> Dict[str, Any]:
     """
     Loads region .npz into a dict with friendly dtypes.
-    Expected keys: G, sample_ids, snp_ids, positions, minor_alleles, major_alleles, chrom (maybe)
+    Expected keys: G, sample_ids, snp_ids, positions,
+    and allele labels (minor_alleles/major_alleles or counted_alleles/other_alleles), chrom (maybe)
     """
     z = np.load(path, allow_pickle=True)
     out = {k: z[k] for k in z.files}
 
     # Normalize common keys to dtype object where appropriate
-    for k in ["sample_ids", "snp_ids", "minor_alleles", "major_alleles"]:
+    for k in ["sample_ids", "snp_ids", "minor_alleles", "major_alleles", "counted_alleles", "other_alleles"]:
         if k in out:
             out[k] = out[k].astype(object)
 
