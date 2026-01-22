@@ -1,5 +1,3 @@
-<<<<<<< HEAD
 # Privatization-for-GWAS-Genomic-Data-Sharing-COMP-430
-=======
-Latest branch, the full folder structure of our project is here. 
->>>>>>> method3
+
+The full folder structure of our project is in the main. 
